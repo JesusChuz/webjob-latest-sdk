@@ -1,0 +1,1 @@
+dotnet webjobapp-test-latest.dll %*

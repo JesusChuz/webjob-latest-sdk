@@ -6,30 +6,40 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
-variables:
-  buildConfiguration: 'Release'
-  webJobName: 'YourWebJobName'
-  artifactName: 'WebJobArtifact'
+  vmImage: windows-latest
+
 steps:
-- task: UseDotNet@2
+- task: DotNetCoreCLI@2
   inputs:
-    packageType: 'sdk'
-    installationPath: $(Agent.ToolsDirectory)/dotnet
-    version: '6.0.x'  # Use the appropriate .NET version
-- script: dotnet restore
-  displayName: 'Restore dependencies'
-- script: dotnet publish -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)/$(webJobName)
-  displayName: 'Publish Web Job'
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration Release'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: '**/*.csproj'
+    arguments: '--output $(Build.BinariesDirectory)/publish_output/App_Data/jobs/continuous/mywebjob'
+    zipAfterPublish: false
+    modifyOutputPath: false
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    arguments: '--output $(Build.BinariesDirectory)/publish_output'
+    zipAfterPublish: false
+    modifyOutputPath: false
 - task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/$(webJobName)'
+  inputs: 
+    rootFolderOrFile: '$(Build.BinariesDirectory)/publish_output' 
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: $(Build.ArtifactStagingDirectory)/$(webJobName).zip
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
     replaceExistingArchive: true
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(webJobName).zip'
-    ArtifactName: $(artifactName)
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
     publishLocation: 'Container'

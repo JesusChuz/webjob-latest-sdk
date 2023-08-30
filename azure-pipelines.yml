@@ -24,13 +24,6 @@ steps:
     zipAfterPublish: false
     modifyOutputPath: false
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'publish'
-    publishWebProjects: true
-    arguments: '--output $(Build.BinariesDirectory)/publish_output'
-    zipAfterPublish: false
-    modifyOutputPath: false
 - task: ArchiveFiles@2
   inputs: 
     rootFolderOrFile: '$(Build.BinariesDirectory)/publish_output' 
@@ -38,6 +31,7 @@ steps:
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
     replaceExistingArchive: true
+    
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'

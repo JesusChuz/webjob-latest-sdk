@@ -1,0 +1,35 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+variables:
+  buildConfiguration: 'Release'
+  webJobName: 'YourWebJobName'
+  artifactName: 'WebJobArtifact'
+steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+    version: '6.0.x'  # Use the appropriate .NET version
+- script: dotnet restore
+  displayName: 'Restore dependencies'
+- script: dotnet publish -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)/$(webJobName)
+  displayName: 'Publish Web Job'
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/$(webJobName)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: $(Build.ArtifactStagingDirectory)/$(webJobName).zip
+    replaceExistingArchive: true
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(webJobName).zip'
+    ArtifactName: $(artifactName)
+    publishLocation: 'Container'
